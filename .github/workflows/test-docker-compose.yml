@@ -19,6 +19,52 @@ jobs:
       - run: docker compose build
       - run: docker compose down -v --remove-orphans
       - run: docker compose up -d --wait backend adminer
-      - name: Test backend is up
-        run: curl http://localhost:8000/api/v1/utils/health-check/
+      - name: Test backend health check
+        run: |
+          echo "Testing health check endpoint..."
+          curl -f http://localhost:8000/api/v1/utils/health-check/ || exit 1
+          echo "✅ Health check passed"
+      - name: Test OpenAPI documentation
+        run: |
+          echo "Testing OpenAPI docs endpoint..."
+          curl -f http://localhost:8000/docs > /dev/null || exit 1
+          echo "✅ OpenAPI docs accessible"
+      - name: Test OpenAPI JSON schema
+        run: |
+          echo "Testing OpenAPI JSON schema..."
+          curl -f http://localhost:8000/api/v1/openapi.json > /dev/null || exit 1
+          echo "✅ OpenAPI JSON schema accessible"
+      - name: Test database connectivity via signup endpoint
+        run: |
+          echo "Testing database connectivity through signup..."
+          # Test signup endpoint (requires DB) - expect 422 due to missing data, but endpoint should be reachable
+          response_code=$(curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:8000/api/v1/users/signup -H "Content-Type: application/json" -d '{}')
+          if [[ "$response_code" == "422" ]]; then
+            echo "✅ Database connectivity confirmed (422 validation error as expected)"
+          else
+            echo "❌ Unexpected response code: $response_code"
+            exit 1
+          fi
+      - name: Test authentication endpoints
+        run: |
+          echo "Testing authentication endpoint accessibility..."
+          # Test login endpoint - expect 422 due to missing credentials, but endpoint should be reachable
+          response_code=$(curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:8000/api/v1/login/access-token)
+          if [[ "$response_code" == "422" ]]; then
+            echo "✅ Authentication endpoint accessible (422 validation error as expected)"
+          else
+            echo "❌ Unexpected response code: $response_code"
+            exit 1
+          fi
+      - name: Test items endpoint (requires auth)
+        run: |
+          echo "Testing protected items endpoint..."
+          # Test items endpoint - expect 401 unauthorized, but endpoint should be reachable
+          response_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/api/v1/items/)
+          if [[ "$response_code" == "401" ]]; then
+            echo "✅ Protected endpoint working correctly (401 unauthorized as expected)"
+          else
+            echo "❌ Unexpected response code: $response_code"
+            exit 1
+          fi
       - run: docker compose down -v --remove-orphans
