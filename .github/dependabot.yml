@@ -14,18 +14,10 @@ updates:
       interval: daily
     commit-message:
       prefix: ⬆
-  # npm
-  - package-ecosystem: npm
-    directory: /frontend
-    schedule:
-      interval: daily
-    commit-message:
-      prefix: ⬆
   # Docker
   - package-ecosystem: docker
     directories:
       - /backend
-      - /frontend
     schedule:
       interval: weekly
     commit-message:
