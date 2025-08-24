@@ -4,7 +4,10 @@ from app import crud
 from app.core.config import settings
 from app.models import User, UserCreate
 
-engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
+# Intentionally break database connection for smoke test demo
+# Change database name to non-existent one
+broken_uri = str(settings.SQLALCHEMY_DATABASE_URI).replace("/app", "/nonexistent_db")
+engine = create_engine(broken_uri)
 
 
 # make sure all SQLModel models are imported (app.models) before initializing DB

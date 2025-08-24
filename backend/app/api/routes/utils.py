@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic.networks import EmailStr
+from sqlmodel import Session, select, text
 
 from app.api.deps import get_current_active_superuser
+from app.core.db import engine
 from app.models import Message
 from app.utils import generate_test_email, send_email
 
@@ -28,4 +30,15 @@ def test_email(email_to: EmailStr) -> Message:
 
 @router.get("/health-check/")
 async def health_check() -> bool:
-    return True
+    """
+    Health check endpoint that verifies database connectivity.
+    """
+    try:
+        # Test database connection
+        with Session(engine) as session:
+            # Simple query to test connection
+            session.exec(text("SELECT 1"))
+        return True
+    except Exception as e:
+        # Return False instead of raising exception for health check
+        return False
