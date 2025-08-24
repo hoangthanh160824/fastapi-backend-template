@@ -30,15 +30,4 @@ def test_email(email_to: EmailStr) -> Message:
 
 @router.get("/health-check/")
 async def health_check() -> bool:
-    """
-    Health check endpoint that verifies database connectivity.
-    """
-    try:
-        # Test database connection
-        with Session(engine) as session:
-            # Simple query to test connection
-            session.exec(text("SELECT 1"))
-        return True
-    except Exception as e:
-        # Return False instead of raising exception for health check
-        return False
+    return True

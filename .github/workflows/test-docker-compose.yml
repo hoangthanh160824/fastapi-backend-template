@@ -3,7 +3,7 @@ name: Test Docker Compose
 on:
   push:
     branches:
-      - master
+      - break-smoke-test
   pull_request:
     types:
       - opened
@@ -52,6 +52,9 @@ jobs:
           response_code=$(curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:8000/api/v1/login/access-token)
           if [[ "$response_code" == "422" ]]; then
             echo "✅ Authentication endpoint accessible (422 validation error as expected)"
+          elif [[ "$response_code" == "500" ]]; then
+            echo "❌ Authentication service broken (500 internal server error)"
+            exit 1
           else
             echo "❌ Unexpected response code: $response_code"
             exit 1
