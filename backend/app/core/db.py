@@ -4,9 +4,8 @@ from app import crud
 from app.core.config import settings
 from app.models import User, UserCreate
 
-# Intentionally breaking the database connection for testing
-# Original: engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
-engine = create_engine("postgresql://wrong_user:wrong_pass@wrong_host:5432/wrong_db")
+#cố tình lỗi để test github action
+engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI).replace("postgresql", "postgres+asyncpg"))
 
 
 # make sure all SQLModel models are imported (app.models) before initializing DB
